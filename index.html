@@ -514,13 +514,14 @@ Todo lo anterior + buscador con lupa, 2 mini apps, seguimiento de datos. Podés 
       const reply = (data.reply || '').trim();
 
       removeTyping();
-      history.push({ role: 'assistant', content: reply });
 
       // Detectar si es un redirect a WhatsApp
       const wa = handleWhatsAppRedirect(reply);
       if (wa) {
+        history.push({ role: 'assistant', content: '¡Bárbaro! Te mando con Nicolás ahora.' });
         showWhatsAppCard(wa.phone, wa.message);
       } else {
+        history.push({ role: 'assistant', content: reply });
         appendMessage('bot', reply);
       }
 
