@@ -506,7 +506,7 @@ Todo lo anterior + buscador con lupa, 2 mini apps, seguimiento de datos. Podés 
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ system: SYSTEM_PROMPT, messages: history })
+        body: JSON.stringify({ messages: history.slice(-10) })
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
