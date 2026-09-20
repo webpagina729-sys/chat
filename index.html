@@ -9,13 +9,18 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --green-primary: #16a34a;
-      --green-light:   #22c55e;
-      --green-soft:    #dcfce7;
-      --green-mid:     #86efac;
-      --blue-accent:   #2563eb;
+      /* Verde: reservado ÚNICAMENTE para el punto "En línea" y el botón de enviar */
+      --green-online:  #22c55e;
+      --green-send:    #16a34a;
+      --green-send-2:  #15803d;
+
+      /* Azul: color principal del chat */
+      --blue-primary:  #2563eb;
+      --blue-dark:     #1d4ed8;
+      --blue-darker:   #1e40af;
       --blue-light:    #dbeafe;
       --blue-soft:     #eff6ff;
+
       --neutral-50:    #f8fafc;
       --neutral-100:   #f1f5f9;
       --neutral-200:   #e2e8f0;
@@ -28,12 +33,12 @@
       --white:         #ffffff;
       --shadow-sm:     0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
       --shadow-md:     0 4px 12px rgba(0,0,0,0.08);
-      --shadow-lg:     0 8px 32px rgba(22,163,74,0.10), 0 2px 8px rgba(0,0,0,0.06);
+      --shadow-lg:     0 8px 32px rgba(37,99,235,0.10), 0 2px 8px rgba(0,0,0,0.06);
     }
 
     body {
       font-family: 'Inter', system-ui, sans-serif;
-      background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 50%, #f8fafc 100%);
+      background: linear-gradient(135deg, #eff6ff 0%, #f8fafc 50%, #ffffff 100%);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -57,7 +62,7 @@
 
     /* ── HEADER ── */
     .chat-header {
-      background: linear-gradient(135deg, #15803d 0%, #16a34a 60%, #1d4ed8 100%);
+      background: linear-gradient(135deg, #1e40af 0%, #2563eb 55%, #3b82f6 100%);
       padding: 14px 18px;
       display: flex;
       align-items: center;
@@ -93,7 +98,7 @@
     }
     .avatar-fallback {
       font-weight: 700;
-      color: var(--green-primary);
+      color: var(--blue-primary);
       font-size: 16px;
       line-height: 1;
     }
@@ -148,18 +153,49 @@
     }
 
     /* ── MESSAGES ── */
-    .msg {
+    .msg-row {
       display: flex;
-      flex-direction: column;
-      max-width: 82%;
+      align-items: flex-end;
+      gap: 8px;
+      max-width: 88%;
       animation: fadeUp 0.25s ease;
     }
     @keyframes fadeUp {
       from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
     }
-    .msg.bot  { align-self: flex-start; }
-    .msg.user { align-self: flex-end; }
+    .msg-row.bot  { align-self: flex-start; }
+    .msg-row.user { align-self: flex-end; flex-direction: row-reverse; }
+
+    /* avatar circular chiquito por cada mensaje del bot */
+    .msg-avatar {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      overflow: hidden;
+      flex-shrink: 0;
+      background: var(--blue-soft);
+      border: 1.5px solid var(--blue-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .msg-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .msg-avatar-fallback {
+      font-weight: 700;
+      color: var(--blue-primary);
+      font-size: 10px;
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
 
     .bubble {
       padding: 10px 14px;
@@ -176,10 +212,10 @@
       border: 1px solid var(--neutral-200);
     }
     .user .bubble {
-      background: linear-gradient(135deg, var(--green-primary), #15803d);
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark));
       color: white;
       border-bottom-right-radius: 5px;
-      box-shadow: 0 2px 8px rgba(22,163,74,0.25);
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
     }
     .msg-time {
       font-size: 10px;
@@ -188,7 +224,7 @@
       padding: 0 4px;
       font-weight: 500;
     }
-    .msg.user .msg-time { text-align: right; }
+    .msg-row.user .msg-time { text-align: right; }
 
     /* ── CHIPS ── */
     .chips {
@@ -241,7 +277,7 @@
     .typing-bubble span:nth-child(3) { animation-delay: 0.4s; }
     @keyframes blink {
       0%,60%,100% { transform: translateY(0); background: var(--neutral-300); }
-      30%          { transform: translateY(-6px); background: var(--green-light); }
+      30%          { transform: translateY(-6px); background: var(--blue-primary); }
     }
 
     /* ── INPUT AREA ── */
@@ -267,7 +303,7 @@
       transition: border-color 0.2s, background 0.2s;
     }
     .chat-input:focus {
-      border-color: var(--green-primary);
+      border-color: var(--blue-primary);
       background: var(--white);
     }
     .chat-input::placeholder { color: var(--neutral-400); }
@@ -275,7 +311,7 @@
     .send-btn {
       width: 42px; height: 42px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--green-primary), #15803d);
+      background: linear-gradient(135deg, var(--green-send), var(--green-send-2));
       border: none;
       cursor: pointer;
       display: flex;
@@ -316,7 +352,7 @@
       flex-shrink: 0;
     }
     .chat-footer-brand span {
-      color: var(--green-primary);
+      color: var(--blue-primary);
       font-weight: 600;
     }
 
@@ -335,7 +371,7 @@
     <div class="avatar" id="avatarWrap">
       <img
         id="avatarImg"
-        src="https://raw.githubusercontent.com/tuweb-ar/servi/main/servi.png"
+        src="servi.png"
         alt="Servi"
         onerror="this.style.display='none'; document.getElementById('avatarFallback').style.display='flex';"
       />
@@ -389,29 +425,9 @@
 
   const history = [];
 
-  /* ── Intenta cargar servi.png desde los repos posibles ── */
-  (function tryLoadAvatar() {
-    const img = document.getElementById('avatarImg');
-    const fallback = document.getElementById('avatarFallback');
-
-    const candidates = [
-      'https://raw.githubusercontent.com/tuweb-ar/servi/main/servi.png',
-      'https://raw.githubusercontent.com/tuwebar/servi/main/servi.png',
-      'https://raw.githubusercontent.com/tuwebarg/servi/main/servi.png',
-    ];
-
-    let idx = 0;
-    img.onerror = function () {
-      idx++;
-      if (idx < candidates.length) {
-        img.src = candidates[idx];
-      } else {
-        img.style.display = 'none';
-        fallback.style.display = 'flex';
-      }
-    };
-    img.src = candidates[0];
-  })();
+  // servi.png vive en el mismo repositorio que este index.html,
+  // así que se referencia con ruta relativa (ver <img id="avatarImg" src="servi.png">).
+  // El onerror ya definido en el HTML muestra el fallback "SR" si no se encuentra.
 
   function handleWhatsAppRedirect(rawReply) {
     const prefix = 'WHATSAPP_REDIRECT|';
@@ -422,16 +438,39 @@
     return { phone, message };
   }
 
+  function makeMsgAvatar() {
+    const avatar = document.createElement('div');
+    avatar.className = 'msg-avatar';
+    const img = document.createElement('img');
+    img.src = 'servi.png';
+    img.alt = 'Servi';
+    img.onerror = function () {
+      img.style.display = 'none';
+      const fb = document.createElement('span');
+      fb.className = 'msg-avatar-fallback';
+      fb.textContent = 'SR';
+      avatar.appendChild(fb);
+    };
+    avatar.appendChild(img);
+    return avatar;
+  }
+
   function showWhatsAppCard(phone, message) {
-    const body    = document.getElementById('chatBody');
+    const body = document.getElementById('chatBody');
+    const row  = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.style.maxWidth = '100%';
+
+    row.appendChild(makeMsgAvatar());
+
     const wrapper = document.createElement('div');
-    wrapper.className  = 'msg bot';
+    wrapper.className = 'msg bot';
     wrapper.style.maxWidth = '100%';
 
     const card = document.createElement('div');
     card.style.cssText = `
-      background: #f0fdf4;
-      border: 1.5px solid #16a34a;
+      background: var(--blue-soft);
+      border: 1.5px solid var(--blue-primary);
       border-radius: 14px;
       padding: 16px;
       display: flex;
@@ -440,7 +479,7 @@
     `;
 
     const title = document.createElement('div');
-    title.style.cssText = 'color:#15803d;font-weight:700;font-size:14px;';
+    title.style.cssText = 'color:#1d4ed8;font-weight:700;font-size:14px;';
     title.textContent = '¡Listo! Te conectamos ahora mismo.';
     card.appendChild(title);
 
@@ -451,13 +490,13 @@
     btn.rel    = 'noopener noreferrer';
     btn.style.cssText = `
       display:flex;align-items:center;justify-content:center;gap:8px;
-      background:#16a34a;color:white;border-radius:10px;
+      background:#2563eb;color:white;border-radius:10px;
       padding:11px 16px;font-weight:600;font-size:14px;
       text-decoration:none;transition:background 0.2s;
     `;
     btn.textContent = 'Ir a WhatsApp';
-    btn.onmouseover = () => btn.style.background = '#15803d';
-    btn.onmouseout  = () => btn.style.background = '#16a34a';
+    btn.onmouseover = () => btn.style.background = '#1d4ed8';
+    btn.onmouseout  = () => btn.style.background = '#2563eb';
     card.appendChild(btn);
 
     wrapper.appendChild(card);
@@ -466,7 +505,8 @@
     time.textContent = getTime();
     wrapper.appendChild(time);
 
-    body.appendChild(wrapper);
+    row.appendChild(wrapper);
+    body.appendChild(row);
     body.scrollTop = body.scrollHeight;
   }
 
@@ -475,7 +515,15 @@
   }
 
   function appendMessage(role, text, chips = []) {
-    const body    = document.getElementById('chatBody');
+    const body = document.getElementById('chatBody');
+
+    const row = document.createElement('div');
+    row.className = `msg-row ${role}`;
+
+    if (role === 'bot') {
+      row.appendChild(makeMsgAvatar());
+    }
+
     const wrapper = document.createElement('div');
     wrapper.className = `msg ${role}`;
 
@@ -504,21 +552,23 @@
       wrapper.appendChild(chipRow);
     }
 
-    body.appendChild(wrapper);
+    row.appendChild(wrapper);
+    body.appendChild(row);
     body.scrollTop = body.scrollHeight;
-    return wrapper;
+    return row;
   }
 
   function showTyping() {
-    const body    = document.getElementById('chatBody');
-    const wrapper = document.createElement('div');
-    wrapper.className = 'msg bot';
-    wrapper.id = 'typing';
+    const body = document.getElementById('chatBody');
+    const row  = document.createElement('div');
+    row.className = 'msg-row bot';
+    row.id = 'typing';
+    row.appendChild(makeMsgAvatar());
     const tb = document.createElement('div');
     tb.className = 'typing-bubble';
     tb.innerHTML = '<span></span><span></span><span></span>';
-    wrapper.appendChild(tb);
-    body.appendChild(wrapper);
+    row.appendChild(tb);
+    body.appendChild(row);
     body.scrollTop = body.scrollHeight;
   }
 
@@ -591,8 +641,7 @@
     setTimeout(() => {
       appendMessage(
         'bot',
-        'Hola, soy **Servi**, asistente de RevendeWays.\nDecime, ¿en qué puedo ayudarte?',
-        ['⚠️ Problemas con un revendedor', '🏪 Configurar mi tienda', '💬 Otros']
+        'Hola, soy **Servi**, asistente de RevendeWays.\nDecime, ¿en qué puedo ayudarte?'
       );
     }, 550);
   });
