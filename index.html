@@ -254,6 +254,45 @@
     }
     .chip:active { transform: translateY(0); }
 
+    /* ── BOTONES DE ENLACE ── */
+    .link-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin-top: 8px;
+    }
+    .link-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--blue-primary), var(--blue-dark));
+      color: #fff;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 13.5px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+      transition: all 0.18s;
+    }
+    .link-btn:hover {
+      box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+      transform: translateY(-1px);
+    }
+    .link-btn:active { transform: translateY(0); }
+    .link-btn svg {
+      width: 15px;
+      height: 15px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      flex-shrink: 0;
+    }
+
     /* ── TYPING INDICATOR ── */
     .typing-bubble {
       background: var(--white);
@@ -514,6 +553,53 @@
     return new Date().toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   }
 
+  // LINKS-START
+  function escapeHtml(s) {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function linkLabel(url) {
+    try {
+      const host = new URL(url).hostname.replace(/^www\./, '');
+      if (host.includes('tutiendapropia.revendeways.shop')) return 'Registrarme y crear mi tienda';
+      if (host === 'wa.me' || host.includes('whatsapp')) return 'Abrir WhatsApp';
+      if (host.includes('revendeways')) return 'Ir a Revende Ways';
+      return 'Abrir enlace';
+    } catch (e) {
+      return 'Abrir enlace';
+    }
+  }
+
+  // Saca las URLs del texto y las devuelve aparte para mostrarlas como botones.
+  // Además limpia frases que quedan "colgadas" esperando el enlace.
+  function splitLinks(raw) {
+    const links = [];
+    let text = raw.replace(/https?:\/\/[^\s<>"]+/g, (m) => {
+      const clean = m.replace(/[.,;:!?)\]]+$/, '');
+      if (clean && !links.includes(clean)) links.push(clean);
+      return '';
+    });
+
+    if (!links.length) return { text: raw, links: [] };
+
+    text = text
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/ {2,}/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    // Línea suelta tipo "Link:" / "Enlace:" que quedó sin URL
+    text = text.replace(/(^|\n)\s*(link|enlace|url)\s*:?\s*$/i, '').trim();
+    // "...en este link:" → "...en el botón de abajo 👇"
+    text = text.replace(/\b(en|desde|a través de|por)\s+(este|ese|el siguiente)\s+(link|enlace)\s*:?\s*$/i, '$1 el botón de abajo 👇');
+    // Cualquier frase que termine en ":" pasa a apuntar al botón
+    text = text.replace(/\s*:\s*$/, ' 👇');
+
+    if (!text) text = 'Acá tenés el enlace 👇';
+    return { text, links };
+  }
+  // LINKS-END
+
   function appendMessage(role, text, chips = []) {
     const body = document.getElementById('chatBody');
 
@@ -527,12 +613,39 @@
     const wrapper = document.createElement('div');
     wrapper.className = `msg ${role}`;
 
+    let displayText = text;
+    let links = [];
+    if (role === 'bot') {
+      const r = splitLinks(text);
+      displayText = r.text;
+      links = r.links;
+    }
+
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.innerHTML = text
+    bubble.innerHTML = escapeHtml(displayText)
       .replace(/\n/g, '<br>')
       .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
     wrapper.appendChild(bubble);
+
+    if (links.length > 0) {
+      const actions = document.createElement('div');
+      actions.className = 'link-actions';
+      links.forEach(url => {
+        const a = document.createElement('a');
+        a.className = 'link-btn';
+        a.href      = url;
+        a.target    = '_blank';
+        a.rel       = 'noopener noreferrer';
+        const label = document.createElement('span');
+        label.textContent = linkLabel(url);
+        a.appendChild(label);
+        a.insertAdjacentHTML('beforeend',
+          '<svg viewBox="0 0 24 24"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>');
+        actions.appendChild(a);
+      });
+      wrapper.appendChild(actions);
+    }
 
     const time = document.createElement('div');
     time.className   = 'msg-time';
