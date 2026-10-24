@@ -461,8 +461,53 @@
 
 <script>
   const WORKER_URL = 'https://workerasistenterw.tuweb.workers.dev/';
+  const WORKER_LOGIN_URL = 'https://datosderevendedor.tuweb.workers.dev/api/validar-codigo-existe';
 
   const history = [];
+
+  // 🔒 Acceso exclusivo para revendedores registrados: el código viaja
+  // codificado en la URL (?d=...), no en texto plano, desde el botón
+  // "Consultar a Servi" de la plataforma, y se valida contra la base real
+  // antes de dejar escribir.
+  function _leerCodigoDesdeUrl() {
+    try {
+      const d = new URLSearchParams(window.location.search).get('d');
+      if (!d) return '';
+      const obj = JSON.parse(decodeURIComponent(escape(atob(d))));
+      return (obj && obj.codigo) ? String(obj.codigo).trim() : '';
+    } catch (e) { return ''; }
+  }
+  const _codigoRevendedorServi = _leerCodigoDesdeUrl();
+  let _accesoServiValidado = false;
+
+  function _bloquearChatSinAcceso() {
+    const input   = document.getElementById('chatInput');
+    const sendBtn = document.getElementById('sendBtn');
+    input.disabled   = true;
+    sendBtn.disabled  = true;
+    input.placeholder = 'Chat exclusivo para revendedores registrados';
+    appendMessage('bot', 'Este chat es exclusivo para revendedores de Revende Ways. Entrá desde el botón "Consultar a Servi" dentro de tu panel para poder usarlo.');
+  }
+
+  async function _validarAccesoServi() {
+    if (!_codigoRevendedorServi) { _bloquearChatSinAcceso(); return; }
+    try {
+      const res = await fetch(WORKER_LOGIN_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: _codigoRevendedorServi }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (data && data.valido) {
+        _accesoServiValidado = true;
+        appendMessage('bot', 'Hola, soy **Servi**, asistente de RevendeWays.\nDecime, ¿en qué puedo ayudarte?');
+      } else {
+        _bloquearChatSinAcceso();
+      }
+    } catch (e) {
+      _bloquearChatSinAcceso();
+    }
+  }
 
   // servi.png vive en el mismo repositorio que este index.html,
   // así que se referencia con ruta relativa (ver <img id="avatarImg" src="servi.png">).
@@ -690,11 +735,20 @@
     if (t) t.remove();
   }
 
+  // 🔒 FIX: límite de 1 mensaje cada 2 segundos, para que no se pueda
+  // spamear el chat (y la IA detrás) tocando enviar repetidamente.
+  let _ultimoEnvioMs = 0;
+
   async function sendMessage(text) {
+    if (!_accesoServiValidado) return;
     const input    = document.getElementById('chatInput');
     const sendBtn  = document.getElementById('sendBtn');
     const userText = (text || input.value).trim();
     if (!userText) return;
+
+    const ahora = Date.now();
+    if (ahora - _ultimoEnvioMs < 2000) return;
+    _ultimoEnvioMs = ahora;
 
     input.value      = '';
     input.disabled   = true;
@@ -709,7 +763,7 @@
       const res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ messages: history.slice(-10) }),
+        body: JSON.stringify({ messages: history.slice(-10), codigo: _codigoRevendedorServi }),
       });
 
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -749,14 +803,9 @@
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
   });
 
-  /* ── Mensaje de bienvenida ── */
+  /* ── Mensaje de bienvenida (solo si el código es válido) ── */
   window.addEventListener('load', () => {
-    setTimeout(() => {
-      appendMessage(
-        'bot',
-        'Hola, soy **Servi**, asistente de RevendeWays.\nDecime, ¿en qué puedo ayudarte?'
-      );
-    }, 550);
+    setTimeout(_validarAccesoServi, 550);
   });
 </script>
 
